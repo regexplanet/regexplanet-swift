@@ -1,2 +1,9 @@
 .build/
+.env
+*.env
+*.md
+*.old
 .swiftpm/
+*.sh
+tmp/
+*.tmp
