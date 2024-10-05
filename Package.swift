@@ -1,32 +1,39 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.10
 import PackageDescription
 
 let package = Package(
     name: "regexplanet-swift",
     platforms: [
-       .macOS(.v10_15)
+       .macOS(.v13)
     ],
     dependencies: [
         // 💧 A server-side Swift web framework.
-        .package(url: "https://github.com/vapor/vapor.git", from: "4.0.0"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.99.3"),
+        // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
     ],
     targets: [
-        .target(
+        .executableTarget(
             name: "App",
             dependencies: [
-                .product(name: "Vapor", package: "vapor")
+                .product(name: "Vapor", package: "vapor"),
+                .product(name: "NIOCore", package: "swift-nio"),
+                .product(name: "NIOPosix", package: "swift-nio"),
             ],
-            swiftSettings: [
-                // Enable better optimizations when building in Release configuration. Despite the use of
-                // the `.unsafeFlags` construct required by SwiftPM, this flag is recommended for Release
-                // builds. See <https://github.com/swift-server/guides/blob/main/docs/building.md#building-for-production> for details.
-                .unsafeFlags(["-cross-module-optimization"], .when(configuration: .release))
-            ]
+            swiftSettings: swiftSettings
         ),
-        .target(name: "Run", dependencies: [.target(name: "App")]),
-        .testTarget(name: "AppTests", dependencies: [
-            .target(name: "App"),
-            .product(name: "XCTVapor", package: "vapor"),
-        ])
+        .testTarget(
+            name: "AppTests",
+            dependencies: [
+                .target(name: "App"),
+                .product(name: "XCTVapor", package: "vapor"),
+            ],
+            swiftSettings: swiftSettings
+        )
     ]
 )
+
+var swiftSettings: [SwiftSetting] { [
+    .enableUpcomingFeature("DisableOutwardActorInference"),
+    .enableExperimentalFeature("StrictConcurrency"),
+] }

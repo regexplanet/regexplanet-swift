@@ -1,6 +1,8 @@
 .build/
 .env
 *.env
+.git
+.github
 *.md
 *.old
 .swiftpm/

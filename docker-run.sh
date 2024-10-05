@@ -1,24 +1,23 @@
-#!/usr/bin/env bash
-#
-# run it in Docker
-#
+#!/bin/bash
 
 set -o errexit
 set -o pipefail
 set -o nounset
 
-ENVFILE=".env"
+docker build \
+	--build-arg COMMIT=$(git rev-parse --short HEAD)-local \
+	--build-arg LASTMOD=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+	--progress=plain \
+	--tag regexplanet-swift \
+	.
 
-if [ -f "${ENVFILE}" ]
-then
-	export $(cat "${ENVFILE}")
-fi
+docker run \
+	--env PORT=4000 \
+	--env COMMIT=$(git rev-parse --short HEAD)-local \
+	--env LASTMOD=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+	--expose 4000 \
+	--name regexplanet-swift \
+	--rm \
+	--publish 4000:4000 \
+	regexplanet-swift
 
-
-DOCKER_BUILDKIT=1 docker build -t regexplanet-swift .
-
-docker run -it \
-    -p 8080:8080 \
-    -e LOG_LEVEL=${LOG_LEVEL:-trace} \
-    -e PORT=8080 \
-    regexplanet-swift
