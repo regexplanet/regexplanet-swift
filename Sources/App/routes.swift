@@ -6,12 +6,18 @@ func routes(_ app: Application) throws {
         //LATER: req.redirect(to: "https://www.regexplanet.com/advanced/swift/index.html", redirectType: .normal)
     }
 
+    app.get("test.json") { req -> Response in
+        let testInput = try req.query.decode(TestInput.self)
+
+        let retVal = RunTest(testInput);
+
+        return try handleJsonp(req: req, from: retVal)
+    }
+
     app.post("test.json") { req -> Response in
         let testInput = try req.content.decode(TestInput.self)
-        let retVal = TestOutput(
-            success: true,
-            html: "\(testInput.regex): \(testInput.replacement)"
-        )
+
+        let retVal = RunTest(testInput);
 
         return try handleJsonp(req: req, from: retVal)
     }
@@ -36,15 +42,16 @@ struct JsonpParams: Content {
 }
 
 struct TestInput: Content {
-    let regex: String
-    let replacement: String
-    let options: [String]
-    let input: [String]
+    let regex: String?
+    let replacement: String?
+    let option: [String]?
+    let input: [String]?
 }
 
 struct TestOutput: Content {
     let success: Bool
-    let html: String
+    let html: String?
+    let message: String?
 }
 
 struct StatusResponse: Content {
